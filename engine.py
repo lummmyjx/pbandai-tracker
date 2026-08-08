@@ -19,6 +19,9 @@ from config import telegram_configured
 BASE_DIR = Path(__file__).resolve().parent
 DEBUG_DIR = BASE_DIR / "debug"
 
+# Statuses that mean we genuinely read the page.
+DECISIVE = {checker.IN_STOCK, checker.SOLD_OUT, checker.COMING_SOON, checker.ENDED}
+
 
 def _cooldown_active(record: dict, cooldown_minutes: int) -> bool:
     last = store.parse_iso(record.get("last_alert"))
@@ -54,19 +57,24 @@ def check_one(item: dict, fetcher, rules, cfg, source: str, log=print) -> dict:
 
     alerted = False
 
-    if result.status == checker.ERROR:
-        streak = int(record.get("error_streak", 0)) + 1
-        patch["error_streak"] = streak
+    # "Decisive" means we actually learned the stock state. Unreadable and
+    # failed reads are not statuses -- they are us being blind, and a tracker
+    # that goes blind quietly is the failure mode that matters most.
+    decisive = result.status in DECISIVE
+    blind_streak = 0 if decisive else int(record.get("blind_streak", 0)) + 1
+    patch["blind_streak"] = blind_streak
+
+    if not decisive:
         patch["error"] = result.error
-        log(f"  {item['id']}: check failed ({streak}x) - {result.error}")
-        threshold = cfg.get("alert_on_error_streak", 5)
-        if threshold and streak == threshold and telegram_configured(cfg):
+        log(f"  {item['id']}: {checker.STATUS_LABEL.get(result.status)} "
+            f"({result.signal}) [blind x{blind_streak}]")
+        threshold = cfg.get("alert_on_blind_streak", 6)
+        if threshold and blind_streak == threshold and telegram_configured(cfg):
             try:
-                notify.send_error_warning(cfg, item, streak, result.error)
+                notify.send_blind_warning(cfg, item, blind_streak, result, source)
             except notify.NotifyError as exc:
-                log(f"  ! could not send error warning: {exc}")
+                log(f"  ! could not send blind warning: {exc}")
     else:
-        patch["error_streak"] = 0
         patch["error"] = ""
         patch["last_known_status"] = result.status
         if baseline != result.status:

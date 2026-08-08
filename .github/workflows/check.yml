@@ -53,17 +53,34 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python app.py once --source "cloud backup"
 
-      - name: Save state
+      - name: Save state, status page and history
         if: always()
         run: |
-          if [[ -z "$(git status --porcelain state.json)" ]]; then
-            echo "No status changes to record."
+          # Committing on every single run would mean ~288 commits a day. So:
+          # commit immediately when a stock status actually changed, and
+          # otherwise only once an hour to refresh STATUS.md and flush the log.
+          STATE_CHANGED="$(git status --porcelain state.json)"
+          MINUTE=$(date -u +%M)
+
+          if [[ -z "$STATE_CHANGED" ]] && (( 10#$MINUTE >= 5 )); then
+            echo "No status change. STATUS.md refreshes on the hourly run."
             exit 0
           fi
+
           git config user.name  "pbandai-tracker"
           git config user.email "actions@github.com"
-          git add state.json
-          git commit -m "state: $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git add state.json STATUS.md history.log 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "Nothing staged to commit."
+            exit 0
+          fi
+
+          if [[ -n "$STATE_CHANGED" ]]; then
+            git commit -m "status change: $(date -u '+%Y-%m-%d %H:%M UTC')"
+          else
+            git commit -m "heartbeat: $(date -u '+%Y-%m-%d %H:%M UTC')"
+          fi
           for attempt in 1 2 3; do
             git pull --rebase --autostash && git push && exit 0
             echo "Push attempt $attempt failed, retrying..."

@@ -43,7 +43,7 @@ DEFAULTS = {
     "alert_cooldown_minutes": 180,     # don't re-alert the same item within this window
     "confirm_reads": 1,                # consecutive in-stock reads required (1 = instant)
     "alert_on_any_change": False,      # also send a quiet note on any status change
-    "alert_on_error_streak": 5,        # warn once after N consecutive failures on an item
+    "alert_on_blind_streak": 6,        # warn once after N consecutive unreadable checks
 
     # --- Dashboard ---
     "dashboard_host": "127.0.0.1",
@@ -71,7 +71,7 @@ _BOOL_KEYS = {"alert_on_any_change", "headless", "open_browser_on_start",
               "save_debug_on_unknown", "backoff_enabled"}
 _INT_KEYS = {"check_interval_seconds", "jitter_seconds", "per_item_delay_seconds",
              "page_timeout_seconds", "max_retries", "alert_cooldown_minutes",
-             "confirm_reads", "alert_on_error_streak", "dashboard_port",
+             "confirm_reads", "alert_on_blind_streak", "dashboard_port",
              "ready_timeout_seconds", "recycle_after_loads", "max_interval_seconds"}
 
 

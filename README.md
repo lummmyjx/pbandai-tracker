@@ -200,6 +200,42 @@ later, you get alerted again.
 
 ---
 
+## Knowing it's still alive
+
+A tracker that fails silently is worse than none, because you stop checking
+manually. Four things guard against that.
+
+**`STATUS.md`** in the repo — rewritten on every cloud check. Open it on GitHub
+and the top line tells you Healthy, Degraded, or Blind, with a table of every
+listing, its status, and the exact text that decided it. If "Last check" is more
+than about 30 minutes old, the schedule has stopped.
+
+**`history.log`** in the repo — one line per cloud run, with per-item status
+codes. Gaps in the timestamps are how you spot missed runs:
+
+```
+2026-08-08 09:15:02 UTC  cloud backup   checked=3 alerts=0 unreadable=0 failed=0  A2866726001=OUT A2891018002=OUT A2884010001=IN
+```
+
+Your PC keeps its own copy at `debug/local-history.log`, so the two never
+fight over the same file.
+
+**A "went blind" Telegram warning.** After 6 consecutive unreadable or failed
+checks on a listing, you get one message saying so — then silence until it
+recovers. This is what was missing when the PC quietly stopped reading pages:
+an unreadable page is not a status, it's the tracker not working, and it now
+says so.
+
+**A daily digest at 9am Singapore time** listing every item and its status, so
+you know the whole thing is alive even on days when nothing changes. Without it,
+"nothing came back in stock" and "this died last week" look identical from your
+phone.
+
+Each Actions run also renders the status table on its **Summary** tab, so you
+can see the result of a run without digging through logs.
+
+---
+
 ## Settings
 
 Everything lives in `config.json`. The ones you might actually want to change:

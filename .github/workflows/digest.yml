@@ -1,0 +1,38 @@
+name: Daily health digest
+
+# One Telegram message a day saying whether the tracker is still working.
+#
+# Without this, silence is ambiguous: "nothing has come back in stock" and
+# "the tracker died a week ago" look identical from your phone. This makes
+# them look different.
+#
+# 01:00 UTC = 9:00 AM Singapore.
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # No browser needed; this only reads state.json and messages Telegram.
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Send digest
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python app.py digest --source "cloud backup"

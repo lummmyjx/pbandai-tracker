@@ -27,8 +27,13 @@ from pathlib import Path
 import checker
 import engine
 import notify
+import report
 import store
 from config import BASE_DIR, load_config, telegram_configured
+
+# The local loop keeps its own history so it never fights the cloud over the
+# committed one. This file is inside debug/, which is git-ignored.
+LOCAL_HISTORY = BASE_DIR / "debug" / "local-history.log"
 
 LOG_LINES: list[str] = []
 LOG_LOCK = threading.Lock()
@@ -70,6 +75,10 @@ def worker(cfg, rules):
             STATUS["last_pass"] = store.now_iso()
             STATUS["passes"] += 1
             consecutive_failures = 0
+            try:
+                report.append_history(summary, "PC", path=LOCAL_HISTORY)
+            except OSError:
+                pass
 
             # If P-Bandai stops rendering for us, backing off is the only thing
             # that helps. Retrying harder is what got us throttled to begin with.
@@ -433,7 +442,50 @@ def cmd_run(cfg, rules):
 
 def cmd_once(cfg, rules, source):
     summary = engine.run_pass(cfg, rules, source=source, log=log)
-    log(f"Pass complete: {summary['checked']} checked, {summary['alerts']} alert(s).")
+    log(f"Pass complete: {summary['checked']} checked, {summary['alerts']} alert(s), "
+        f"{summary.get('unreadable', 0)} unreadable, {summary.get('errors', 0)} failed.")
+    log(report.publish(summary, source))
+
+
+def cmd_digest(cfg, source):
+    """Periodic 'still alive' message, so silence is never ambiguous."""
+    items = store.load_watchlist()
+    state = store.load_state()
+    lines, healthy = [], True
+
+    for item in items:
+        record = state.get(item["id"], {})
+        status = record.get("status", "never")
+        name = item.get("label") or record.get("title") or item["id"]
+        if len(name) > 40:
+            name = name[:37] + "..."
+        age = report._age(record.get("last_checked"))
+        lines.append(f"{name}: {checker.STATUS_LABEL.get(status, 'not yet checked')} "
+                     f"({age})")
+        if status in (checker.UNKNOWN, checker.ERROR):
+            healthy = False
+
+    # A stale timestamp means the schedule stopped, which no per-item status
+    # would reveal on its own.
+    newest = max((store.parse_iso(state.get(i["id"], {}).get("last_checked"))
+                  for i in items), default=None, key=lambda d: d or datetime.min.replace(
+                      tzinfo=timezone.utc))
+    if items and newest:
+        if newest.tzinfo is None:
+            newest = newest.replace(tzinfo=timezone.utc)
+        if (datetime.now(timezone.utc) - newest).total_seconds() > 3600:
+            healthy = False
+            lines.append("No check has completed in over an hour — "
+                         "the schedule may have stopped.")
+    elif items:
+        healthy = False
+        lines.append("No listing has ever been checked.")
+
+    if not telegram_configured(cfg):
+        print("Telegram not configured; nothing sent.")
+        return
+    notify.send_digest(cfg, lines, healthy, source)
+    print(f"Digest sent ({'healthy' if healthy else 'needs a look'}).")
 
 
 def main():
@@ -443,6 +495,8 @@ def main():
     once = sub.add_parser("once", help="single pass, then exit")
     once.add_argument("--source", default="PC", help="label shown in the alert")
     sub.add_parser("test-alert", help="send a test Telegram message")
+    digest = sub.add_parser("digest", help="send a 'still alive' summary to Telegram")
+    digest.add_argument("--source", default="cloud backup")
     add = sub.add_parser("add", help="add a listing")
     add.add_argument("url")
     add.add_argument("--label", default="")
@@ -459,6 +513,8 @@ def main():
         cmd_run(cfg, rules)
     elif command == "once":
         cmd_once(cfg, rules, args.source)
+    elif command == "digest":
+        cmd_digest(cfg, args.source)
     elif command == "test-alert":
         try:
             notify.send_test(cfg)

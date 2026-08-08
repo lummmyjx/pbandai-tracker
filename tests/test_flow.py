@@ -60,7 +60,7 @@ def main() -> int:
     cfg["telegram_chat_id"] = "12345"
     cfg["alert_cooldown_minutes"] = 180
     cfg["confirm_reads"] = 1
-    cfg["alert_on_error_streak"] = 2
+    cfg["alert_on_blind_streak"] = 2
     rules = checker.load_rules()
 
     tmp = Path(tempfile.mkdtemp(prefix="pbtracker-test-"))
@@ -114,24 +114,59 @@ def main() -> int:
     engine.check_one(item, fetcher, rules, cfg, "test", log=lambda *_: None)
     check("cooldown suppresses rapid re-alert", len(SENT) == 1, f"sent={len(SENT)}")
 
-    print("\n-- errors --")
+    print("\n-- going blind is detected, not ignored --")
     SENT.clear()
-    store.update_state(item["id"], {"last_alert": None, "error_streak": 0})
-    fetcher = FakeFetcher([checker.ERROR, checker.ERROR])
+    store.update_state(item["id"], {"last_alert": None, "blind_streak": 0})
+    fetcher = FakeFetcher([checker.ERROR, checker.ERROR, checker.ERROR])
     engine.check_one(item, fetcher, rules, cfg, "test", log=lambda *_: None)
     state = store.load_state()[item["id"]]
-    check("error keeps last known status",
+    check("a failed check keeps the last known status",
           state.get("last_known_status") == checker.IN_STOCK,
           str(state.get("last_known_status")))
     engine.check_one(item, fetcher, rules, cfg, "test", log=lambda *_: None)
-    check("warns after an error streak", len(SENT) == 1, f"sent={len(SENT)}")
-
-    print("\n-- unknown never counts as a buy signal --")
-    SENT.clear()
-    store.update_state(item["id"], {"last_alert": None, "last_known_status": checker.SOLD_OUT})
-    fetcher = FakeFetcher([checker.UNKNOWN])
+    check("warns after consecutive failures", len(SENT) == 1, f"sent={len(SENT)}")
     engine.check_one(item, fetcher, rules, cfg, "test", log=lambda *_: None)
-    check("unknown sends nothing", len(SENT) == 0, f"sent={len(SENT)}")
+    check("warns only once, not every check", len(SENT) == 1, f"sent={len(SENT)}")
+
+    # This is the exact failure that went unnoticed on the PC: readable pages
+    # that contain no stock info. It must be treated as blindness, not silence.
+    SENT.clear()
+    store.update_state(item["id"], {"last_alert": None, "blind_streak": 0,
+                                    "last_known_status": checker.SOLD_OUT})
+    fetcher = FakeFetcher([checker.UNKNOWN, checker.UNKNOWN])
+    engine.check_one(item, fetcher, rules, cfg, "test", log=lambda *_: None)
+    check("one unreadable check stays quiet", len(SENT) == 0, f"sent={len(SENT)}")
+    engine.check_one(item, fetcher, rules, cfg, "test", log=lambda *_: None)
+    check("repeated unreadable checks raise a warning", len(SENT) == 1, f"sent={len(SENT)}")
+    state = store.load_state()[item["id"]]
+    check("unreadable never overwrites the last known status",
+          state.get("last_known_status") == checker.SOLD_OUT,
+          str(state.get("last_known_status")))
+
+    SENT.clear()
+    store.update_state(item["id"], {"blind_streak": 0})
+    fetcher = FakeFetcher([checker.SOLD_OUT])
+    engine.check_one(item, fetcher, rules, cfg, "test", log=lambda *_: None)
+    check("a good read clears the blind streak",
+          store.load_state()[item["id"]].get("blind_streak") == 0)
+
+    print("\n-- status page and history log --")
+    import report
+    tmp2 = Path(tempfile.mkdtemp(prefix="pbtracker-report-"))
+    report.STATUS_PATH = tmp2 / "STATUS.md"
+    report.HISTORY_PATH = tmp2 / "history.log"
+    line = report.publish({"checked": 1, "alerts": 0, "unreadable": 0, "errors": 0},
+                          "cloud backup")
+    md = report.STATUS_PATH.read_text(encoding="utf-8")
+    check("status page written", report.STATUS_PATH.exists())
+    check("status page reports health", "Healthy" in md or "Degraded" in md
+          or "Blind" in md, md[:120])
+    check("status page lists the item", item["id"] in md or "Test Gunpla" in md)
+    check("history line records the source", "cloud backup" in line, line)
+    check("history line records per-item status", item["id"] + "=" in line, line)
+    report.publish({"checked": 1, "alerts": 0, "unreadable": 0, "errors": 0}, "cloud backup")
+    check("history appends rather than overwrites",
+          len(report.HISTORY_PATH.read_text(encoding="utf-8").strip().splitlines()) == 2)
 
     print("\n-- secret handling --")
     # Assembled from pieces on purpose: a literal token-shaped string in this

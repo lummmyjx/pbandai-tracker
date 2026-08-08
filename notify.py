@@ -137,15 +137,32 @@ def send_status_change(cfg: dict, item: dict, old: str, result, source: str = "P
     send(cfg, text, link=item["url"])
 
 
-def send_error_warning(cfg: dict, item: dict, streak: int, error: str) -> None:
+def send_blind_warning(cfg: dict, item: dict, streak: int, result,
+                       source: str = "PC") -> None:
+    """Sent once when a listing stops being readable.
+
+    This is the alert that matters when nothing else is happening: silence from
+    a tracker is ambiguous, and this removes the ambiguity.
+    """
     name = item.get("label") or item["id"]
+    detail = (result.error or result.signal or "")[:250]
     text = (
-        f"⚠️ <b>Tracker problem</b>\n\n"
-        f"{_esc(name)} has failed {streak} checks in a row.\n"
-        f"<code>{_esc(error[:300])}</code>\n\n"
-        f"The listing may have been removed, or P-Bandai changed their page."
+        f"⚠️ <b>Tracker went blind</b>\n\n"
+        f"{_esc(name)} has been unreadable for {streak} checks in a row "
+        f"(on {_esc(source)}).\n\n"
+        f"<code>{_esc(detail)}</code>\n\n"
+        f"Likely P-Bandai throttling, or the listing was removed. "
+        f"Checks are backing off automatically — this often clears itself. "
+        f"You will not get another warning for this listing until it reads again."
     )
     send(cfg, text, link=item.get("url", ""))
+
+
+def send_digest(cfg: dict, lines: list, healthy: bool, source: str = "cloud") -> None:
+    """Periodic 'still alive' summary, so silence always means the same thing."""
+    head = "✅ <b>Tracker healthy</b>" if healthy else "⚠️ <b>Tracker needs a look</b>"
+    body = "\n".join(f"• {_esc(line)}" for line in lines) or "• nothing tracked yet"
+    send(cfg, f"{head}\n<i>daily check-in from the {_esc(source)}</i>\n\n{body}")
 
 
 def send_test(cfg: dict) -> None:
