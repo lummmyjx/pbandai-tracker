@@ -1,0 +1,81 @@
+name: P-Bandai stock check
+
+# Cloud backup: keeps watching while your PC is off.
+# GitHub's minimum schedule granularity is 5 minutes, and runs can be delayed a
+# few minutes when their queues are busy. Your local tracker is the fast path;
+# this is the safety net.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:          # lets you trigger a run by hand from the Actions tab
+
+concurrency:
+  group: pbandai-check
+  cancel-in-progress: false
+
+permissions:
+  contents: write             # needed to commit state.json back for de-duplication
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # The browser is ~300MB. Caching it cuts each run from ~2.5 min to ~1 min,
+      # which matters if you ever move this to a private repo (billed minutes).
+      - name: Cache browser
+        id: browser-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-v1
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          if [[ "${{ steps.browser-cache.outputs.cache-hit }}" == "true" ]]; then
+            python -m playwright install-deps chromium
+          else
+            python -m playwright install --with-deps chromium
+          fi
+
+      - name: Check listings
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python app.py once --source "cloud backup"
+
+      - name: Save state
+        if: always()
+        run: |
+          if [[ -z "$(git status --porcelain state.json)" ]]; then
+            echo "No status changes to record."
+            exit 0
+          fi
+          git config user.name  "pbandai-tracker"
+          git config user.email "actions@github.com"
+          git add state.json
+          git commit -m "state: $(date -u '+%Y-%m-%d %H:%M UTC')"
+          for attempt in 1 2 3; do
+            git pull --rebase --autostash && git push && exit 0
+            echo "Push attempt $attempt failed, retrying..."
+            sleep 5
+          done
+          echo "Could not push state; next run will re-detect."
+
+      - name: Upload debug output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-${{ github.run_id }}
+          path: debug/
+          if-no-files-found: ignore
+          retention-days: 7

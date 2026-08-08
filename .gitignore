@@ -1,0 +1,16 @@
+# --- Secrets: never commit these -------------------------------------------
+config.json
+config.local.json
+.pbandai-tracker.json
+.env
+.env.*
+*secret*
+*.pem
+*.key
+
+# --- Local noise -----------------------------------------------------------
+debug/
+__pycache__/
+*.pyc
+.venv/
+venv/

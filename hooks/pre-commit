@@ -1,0 +1,80 @@
+#!/bin/sh
+# Blocks any commit that would publish a secret.
+#
+# Enabled by running install-hooks.bat once, which points git at this folder
+# (git config core.hooksPath hooks). Because the hook lives in the repo rather
+# than in .git/hooks, it survives re-cloning and travels with the project.
+#
+# Checks, in order:
+#   1. Files that must never be committed  (config.json, .env, key files)
+#   2. Staged content that looks like a Telegram bot token
+#   3. Scraped page dumps from debug/
+#
+# Bypassable with --no-verify by design. This is a safety net for accidents,
+# not a lock against yourself.
+
+RED=''
+YELLOW=''
+RESET=''
+if [ -t 1 ]; then
+  RED=$(printf '\033[31m'); YELLOW=$(printf '\033[33m'); RESET=$(printf '\033[0m')
+fi
+
+fail() {
+  printf '\n%sCOMMIT BLOCKED%s  %s\n\n' "$RED" "$RESET" "$1"
+  shift
+  for line in "$@"; do printf '  %s\n' "$line"; done
+  printf '\n'
+  exit 1
+}
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+# --- 1. Files that must never be committed --------------------------------
+for path in $staged; do
+  base=$(basename "$path")
+  case "$base" in
+    config.example.json)
+      continue ;;
+    config.json|.pbandai-tracker.json|.env|.env.*|*secret*|*.pem|*.key)
+      fail "'$path' holds credentials and must never be committed." \
+           "Unstage it:" \
+           "    git reset HEAD \"$path\"" \
+           "" \
+           "It should already be covered by .gitignore. If it is not," \
+           "add it there before committing anything else."
+      ;;
+  esac
+done
+
+# --- 2. Anything shaped like a Telegram bot token --------------------------
+# Matches 8123456789:AAH7x... regardless of which file it turned up in.
+TOKEN_RE='[0-9]\{6,12\}:AA[A-Za-z0-9_-]\{20,\}'
+
+for path in $staged; do
+  if git show ":$path" 2>/dev/null | grep -aq "$TOKEN_RE"; then
+    line=$(git show ":$path" 2>/dev/null | grep -an "$TOKEN_RE" | head -1 | cut -d: -f1)
+    fail "'$path' (line $line) contains something shaped like a Telegram bot token." \
+         "Remove it and keep the token in one of these instead:" \
+         "    config.json                      (git-ignored)" \
+         "    ~/.pbandai-tracker.json          (outside the repo entirely)" \
+         "    GitHub repo secrets              (for the cloud backup)" \
+         "" \
+         "If this token was ever pushed anywhere, revoke it:" \
+         "    Telegram -> @BotFather -> /revoke"
+  fi
+done
+
+# --- 3. Scraped page dumps -------------------------------------------------
+for path in $staged; do
+  case "$path" in
+    debug/*)
+      fail "'$path' is a scraped page dump and does not belong in the repo." \
+           "Unstage it:" \
+           "    git reset HEAD debug/" ;;
+  esac
+done
+
+printf '%spre-commit: no secrets detected%s\n' "$YELLOW" "$RESET"
+exit 0

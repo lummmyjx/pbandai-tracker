@@ -1,0 +1,90 @@
+{
+  "_comment": [
+    "Status-detection rules. Every entry is a case-insensitive regular expression,",
+    "matched against either a button's label or the rendered page text.",
+    "If P-Bandai changes their wording, edit this file -- you should not need to",
+    "touch any Python. Decision order: active buy button > sold out > sales ended >",
+    "coming soon > disabled buy button > unknown."
+  ],
+
+  "buy_text_patterns": [
+    "place (a |your )?pre-?order",
+    "place (an )?order",
+    "add to cart",
+    "add to bag",
+    "add to basket",
+    "buy now",
+    "pre-?order now",
+    "order now",
+    "complete (your )?pre-?order",
+    "proceed to (checkout|purchase)",
+    "^purchase$",
+    "カートに入れる",
+    "予約する"
+  ],
+
+  "buy_exclude_patterns": [
+    "guide",
+    "help",
+    "history",
+    "policy",
+    "terms",
+    "how to",
+    "about",
+    "faq",
+    "view cart",
+    "my cart",
+    "go to cart",
+    "cart \\(",
+    "continue shopping"
+  ],
+
+  "sold_out_patterns": [
+    "sold\\s*out",
+    "out of stock",
+    "temporarily (out of stock|unavailable)",
+    "currently unavailable",
+    "在庫切れ"
+  ],
+
+  "ended_patterns": [
+    "sales?\\s*(period\\s*)?(has\\s*)?ended",
+    "end of sale",
+    "order(ing)? period (has )?ended",
+    "no longer available",
+    "sales?\\s*closed",
+    "受付終了"
+  ],
+
+  "coming_soon_patterns": [
+    "coming soon",
+    "sales?\\s*(will\\s*)?start",
+    "on sale from",
+    "pre-?order (opens|starts|begins)",
+    "notify me when available",
+    "発売予定"
+  ],
+
+  "_ready_comment": [
+    "The tracker waits until one of these appears before reading the page.",
+    "Without it, a slow render looks identical to a page with no stock info,",
+    "which is what produces spurious 'unreadable' results."
+  ],
+  "ready_patterns": [
+    "SG\\$\\s?[0-9]",
+    "SGD\\s?[0-9]",
+    "sold\\s*out",
+    "out of stock",
+    "add to cart",
+    "place (a |your )?pre-?order",
+    "pre-?orders?\\s*open",
+    "coming soon",
+    "sales?\\s*(period\\s*)?(has\\s*)?ended"
+  ],
+
+  "price_patterns": [
+    "SG\\$\\s?[0-9][0-9,]*(?:\\.[0-9]{2})?",
+    "SGD\\s?[0-9][0-9,]*(?:\\.[0-9]{2})?",
+    "S\\$\\s?[0-9][0-9,]*(?:\\.[0-9]{2})?"
+  ]
+}
