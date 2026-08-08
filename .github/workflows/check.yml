@@ -6,7 +6,11 @@ name: P-Bandai stock check
 # this is the safety net.
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    # Deliberately NOT "*/5". GitHub advises against scheduling on the hour
+    # because that is their busiest moment and runs get dropped, and "*/5"
+    # lands on :00 every time. Offsetting by 3 minutes measurably improves
+    # the odds of each run actually firing.
+    - cron: "3,8,13,18,23,28,33,38,43,48,53,58 * * * *"
   workflow_dispatch:          # lets you trigger a run by hand from the Actions tab
 
 concurrency:
@@ -59,7 +63,11 @@ jobs:
           # Committing on every single run would mean ~288 commits a day. So:
           # commit immediately when a stock status actually changed, and
           # otherwise only once an hour to refresh STATUS.md and flush the log.
-          STATE_CHANGED="$(git status --porcelain state.json)"
+          # state.json changes on EVERY run because last_checked moves, so
+          # "did the file change" is the wrong question. Only a status field
+          # moving counts as a real change worth an immediate commit.
+          STATE_CHANGED="$(git diff -U0 -- state.json \
+            | grep -E '^[+-] *"(status|last_known_status)"' || true)"
           MINUTE=$(date -u +%M)
 
           if [[ -z "$STATE_CHANGED" ]] && (( 10#$MINUTE >= 5 )); then

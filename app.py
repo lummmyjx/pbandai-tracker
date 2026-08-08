@@ -473,9 +473,12 @@ def cmd_digest(cfg, source):
     if items and newest:
         if newest.tzinfo is None:
             newest = newest.replace(tzinfo=timezone.utc)
-        if (datetime.now(timezone.utc) - newest).total_seconds() > 3600:
+        # Timestamps here come from the last *committed* state, and GitHub's
+        # scheduler is routinely 10-20 minutes late, so a short lag is normal.
+        # Only flag a genuinely long silence.
+        if (datetime.now(timezone.utc) - newest).total_seconds() > 5400:
             healthy = False
-            lines.append("No check has completed in over an hour — "
+            lines.append("No check has completed in over 90 minutes — "
                          "the schedule may have stopped.")
     elif items:
         healthy = False
