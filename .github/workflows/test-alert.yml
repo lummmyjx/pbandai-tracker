@@ -1,0 +1,43 @@
+name: Send test alert
+
+# Proves the cloud backup can actually reach your phone.
+#
+# The stock check running successfully does NOT prove this -- if a Telegram
+# secret is wrong, the checks keep passing silently and you only find out when a
+# real restock produces no alert. Run this once after setting up your secrets,
+# and any time you change them.
+#
+# Manual only; it never runs on a schedule.
+on: workflow_dispatch
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # No browser needed -- this only talks to Telegram.
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Send the test message
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [[ -z "$TELEGRAM_BOT_TOKEN" ]]; then
+            echo "TELEGRAM_BOT_TOKEN secret is missing or empty."
+            echo "Settings -> Secrets and variables -> Actions"
+            exit 1
+          fi
+          if [[ -z "$TELEGRAM_CHAT_ID" ]]; then
+            echo "TELEGRAM_CHAT_ID secret is missing or empty."
+            exit 1
+          fi
+          python app.py test-alert
