@@ -59,10 +59,7 @@ def worker(cfg, rules):
     STATUS["running"] = True
     fetcher = None
     consecutive_failures = 0
-    backoff_steps = 0            # doubles the wait each time the site pushes back
-
     base = cfg["check_interval_seconds"]
-    ceiling = cfg.get("max_interval_seconds", 900)
 
     while True:
         try:
@@ -80,26 +77,11 @@ def worker(cfg, rules):
             except OSError:
                 pass
 
-            # If P-Bandai stops rendering for us, backing off is the only thing
-            # that helps. Retrying harder is what got us throttled to begin with.
-            if cfg.get("backoff_enabled", True):
-                unreadable = summary.get("unreadable", 0)
-                errors = summary.get("errors", 0)
-                if unreadable or errors:
-                    parts = []
-                    if unreadable:
-                        parts.append(f"{unreadable} unreadable")
-                    if errors:
-                        parts.append(f"{errors} failed to load")
-                    backoff_steps = min(backoff_steps + 1, 4)
-                    log(f"{' and '.join(parts)} - backing off to "
-                        f"{int(min(base * 2 ** backoff_steps, ceiling))}s between passes. "
-                        f"This usually clears itself.")
-                    if fetcher:
-                        fetcher.recycle_context()
-                elif backoff_steps:
-                    backoff_steps = 0
-                    log(f"Readable again - back to {base}s between passes.")
+            # Backoff is now per listing, decided in engine.check_one, so a slow
+            # page on one item no longer penalises the others. All we do here is
+            # freshen the browser session when something went wrong.
+            if (summary.get("unreadable") or summary.get("errors")) and fetcher:
+                fetcher.recycle_context()
         except Exception as exc:                          # noqa: BLE001
             consecutive_failures += 1
             log(f"Pass failed ({type(exc).__name__}: {exc}). Restarting browser.")
@@ -108,10 +90,12 @@ def worker(cfg, rules):
             fetcher = None
             time.sleep(min(60, 5 * consecutive_failures))
 
-        interval = min(base * (2 ** backoff_steps), ceiling)
-        interval += random.uniform(0, cfg["jitter_seconds"])
+        # Wander either side of the base interval rather than marching to a
+        # metronome, so the request pattern doesn't look machine-generated.
+        jitter = cfg["jitter_seconds"]
+        interval = max(20, base + random.uniform(-jitter * 0.4, jitter))
         STATUS["interval"] = int(interval)
-        STATUS["backoff"] = backoff_steps
+        STATUS["backoff"] = 0
         STATUS["next_pass"] = datetime.now(timezone.utc).timestamp() + interval
         WAKE.wait(timeout=interval)
         WAKE.clear()

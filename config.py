@@ -26,10 +26,10 @@ DEFAULTS = {
 
     # --- Checking behaviour ---
     "check_interval_seconds": 90,      # local loop: how long between full passes
-    "jitter_seconds": 25,              # random 0..N added, so requests aren't robotic
+    "jitter_seconds": 30,              # interval wanders +/- this, never metronomic
     "per_item_delay_seconds": 4,       # pause between items in one pass
-    "page_timeout_seconds": 45,
-    "ready_timeout_seconds": 25,       # how long to wait for the product area to paint
+    "page_timeout_seconds": 60,
+    "ready_timeout_seconds": 40,       # how long to wait for the product area to paint
     "settle_seconds": 1.0,             # small pause after it paints
     "max_retries": 2,
     "recycle_after_loads": 25,         # start a fresh browser session this often

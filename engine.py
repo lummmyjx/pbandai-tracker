@@ -116,6 +116,19 @@ def check_one(item: dict, fetcher, rules, cfg, source: str, log=print) -> dict:
             except notify.NotifyError as exc:
                 log(f"  ! could not send change note: {exc}")
 
+    # Back off THIS listing only. A slow or throttled page on one item says
+    # nothing about the others, and slowing a healthy listing down because a
+    # neighbour stumbled just loses you coverage for no reason.
+    if decisive:
+        patch["next_due"] = None
+    else:
+        base = cfg.get("check_interval_seconds", 90)
+        ceiling = cfg.get("max_interval_seconds", 900)
+        delay = min(base * (2 ** min(blind_streak, 4)), ceiling)
+        patch["next_due"] = (datetime.now(timezone.utc)
+                             + timedelta(seconds=delay)).isoformat(timespec="seconds")
+        log(f"    -> {item['id']} paused for {int(delay)}s; others continue")
+
     patch["alerted"] = alerted
     store.update_state(item["id"], patch)
     return patch
@@ -126,9 +139,31 @@ def run_pass(cfg, rules, source: str = "PC", fetcher=None, log=print) -> dict:
     items = [i for i in store.load_watchlist() if i.get("enabled", True)]
     if not items:
         log("Watchlist is empty - nothing to check.")
-        return {"checked": 0, "alerts": 0}
+        return {"checked": 0, "alerts": 0, "unreadable": 0, "errors": 0, "skipped": 0}
 
-    log(f"Checking {len(items)} listing(s)...")
+    # Honour each listing's own backoff, then randomise the order so we never
+    # hit the same listing first every single time.
+    state = store.load_state()
+    now = datetime.now(timezone.utc)
+    due, skipped = [], 0
+    for item in items:
+        when = store.parse_iso(state.get(item["id"], {}).get("next_due"))
+        if when and when.tzinfo is None:
+            when = when.replace(tzinfo=timezone.utc)
+        if when and when > now:
+            skipped += 1
+            continue
+        due.append(item)
+    random.shuffle(due)
+
+    if not due:
+        log(f"All {len(items)} listing(s) are backed off; nothing due yet.")
+        return {"checked": 0, "alerts": 0, "unreadable": 0, "errors": 0,
+                "skipped": skipped}
+
+    note = f" ({skipped} backed off)" if skipped else ""
+    log(f"Checking {len(due)} of {len(items)} listing(s){note}...")
+    items = due
     own_fetcher = fetcher is None
     if own_fetcher:
         fetcher = checker.PageFetcher(cfg)
@@ -151,5 +186,5 @@ def run_pass(cfg, rules, source: str = "PC", fetcher=None, log=print) -> dict:
         if own_fetcher:
             fetcher.stop()
 
-    return {"checked": len(items), "alerts": alerts,
-            "unreadable": unreadable, "errors": errors}
+    return {"checked": len(items), "alerts": alerts, "unreadable": unreadable,
+            "errors": errors, "skipped": skipped}

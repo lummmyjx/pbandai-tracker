@@ -323,6 +323,14 @@ class PageFetcher:
             page.goto(url, wait_until="domcontentloaded")
             self.loads_since_recycle += 1
 
+            # Nudge the page: some storefronts defer rendering the purchase
+            # block until it is scrolled towards, and a viewport that never
+            # moves is also a giveaway that nobody is really here.
+            try:
+                page.mouse.wheel(0, 900)
+            except Exception:
+                pass
+
             # Wait for real product content rather than a fixed sleep. Under load
             # -- or when the site is throttling us -- a fixed sleep reads a
             # half-painted page and reports a false "unreadable".

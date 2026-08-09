@@ -150,6 +150,42 @@ def main() -> int:
     check("a good read clears the blind streak",
           store.load_state()[item["id"]].get("blind_streak") == 0)
 
+    print("\n-- per-listing backoff --")
+    SENT.clear()
+    second = store.add_item("https://p-bandai.com/sg/item/A2891018002", "Healthy one")
+    store.update_state(item["id"], {"blind_streak": 0, "next_due": None})
+    store.update_state(second["id"], {"blind_streak": 0, "next_due": None})
+
+    # One listing goes blind; the other is fine.
+    engine.check_one(item, FakeFetcher([checker.UNKNOWN]), rules, cfg, "test",
+                     log=lambda *_: None)
+    engine.check_one(second, FakeFetcher([checker.SOLD_OUT]), rules, cfg, "test",
+                     log=lambda *_: None)
+    state = store.load_state()
+    check("the blind listing is paused", state[item["id"]].get("next_due"))
+    check("the healthy listing is not paused",
+          not state[second["id"]].get("next_due"),
+          str(state[second["id"]].get("next_due")))
+
+    # A pass must skip the paused one and still check the healthy one.
+    class OneShot:
+        def __init__(self): self.seen = []
+        def check(self, url, rules, debug_dir=None):
+            self.seen.append(url)
+            return checker.CheckResult(status=checker.SOLD_OUT, title="T",
+                                       signal="scripted")
+    spy = OneShot()
+    summary = engine.run_pass(cfg, rules, source="test", fetcher=spy,
+                              log=lambda *_: None)
+    check("paused listing is skipped, not checked",
+          all(item["id"] not in u for u in spy.seen), str(spy.seen))
+    check("healthy listing still checked",
+          any(second["id"] in u for u in spy.seen), str(spy.seen))
+    check("pass reports what it skipped", summary.get("skipped") == 1, str(summary))
+
+    store.remove_item(second["id"])
+    store.update_state(item["id"], {"next_due": None, "blind_streak": 0})
+
     print("\n-- status page and history log --")
     import report
     tmp2 = Path(tempfile.mkdtemp(prefix="pbtracker-report-"))
