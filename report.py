@@ -102,9 +102,11 @@ def build_status_markdown(source: str = "") -> str:
         "",
         "---",
         "",
-        "This page is rewritten automatically on every cloud check. If "
-        "'Last check' is more than about 30 minutes old, the scheduled workflow "
-        "has stopped running — check the Actions tab.",
+        "This page is rewritten on every cloud check. GitHub honours roughly "
+        "one scheduled run an hour on a free public repo no matter what the "
+        "cron asks for, so gaps of an hour or two are normal. If 'Last check' "
+        "is more than about 3 hours old, something has actually stopped — "
+        "check the Actions tab.",
         "",
         "See `history.log` for the full run-by-run record.",
     ]

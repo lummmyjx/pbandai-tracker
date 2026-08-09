@@ -6,11 +6,12 @@ name: P-Bandai stock check
 # this is the safety net.
 on:
   schedule:
-    # Deliberately NOT "*/5". GitHub advises against scheduling on the hour
-    # because that is their busiest moment and runs get dropped, and "*/5"
-    # lands on :00 every time. Offsetting by 3 minutes measurably improves
-    # the odds of each run actually firing.
-    - cron: "3,8,13,18,23,28,33,38,43,48,53,58 * * * *"
+    # Observed reality on a free public repo: asking for 12 runs an hour got
+    # about one. GitHub drops scheduled runs aggressively, and high-frequency
+    # schedules appear to be culled hardest. Asking for 4 well-spaced runs an
+    # hour, off the busy top-of-hour, tends to get a larger share honoured.
+    # Treat the cloud as an hourly-ish safety net, not a fast path.
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:          # lets you trigger a run by hand from the Actions tab
 
 concurrency:

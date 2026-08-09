@@ -473,12 +473,13 @@ def cmd_digest(cfg, source):
     if items and newest:
         if newest.tzinfo is None:
             newest = newest.replace(tzinfo=timezone.utc)
-        # Timestamps here come from the last *committed* state, and GitHub's
-        # scheduler is routinely 10-20 minutes late, so a short lag is normal.
-        # Only flag a genuinely long silence.
-        if (datetime.now(timezone.utc) - newest).total_seconds() > 5400:
+        # Measured on a real free public repo, GitHub honours roughly one
+        # scheduled run an hour regardless of what the cron asks for, and gaps
+        # of 90+ minutes are normal. Flagging anything tighter than 3 hours
+        # would cry wolf, which is worse than not warning at all.
+        if (datetime.now(timezone.utc) - newest).total_seconds() > 10800:
             healthy = False
-            lines.append("No check has completed in over 90 minutes — "
+            lines.append("No check has completed in over 3 hours — "
                          "the schedule may have stopped.")
     elif items:
         healthy = False
