@@ -1,13 +1,13 @@
 # P-Bandai tracker status
 
-**🟢 Healthy — every listing read cleanly**
+**🟡 Degraded — 1 of 2 listings unreadable**
 
-Last check: 2026-08-30 17:30 UTC (by cloud backup)
+Last check: 2026-08-30 18:02 UTC (by cloud backup)
 Tracking 2 listing(s).
 
 | Listing | Status | Price | Last checked | Why |
 |---|---|---|---|---|
-| [ONE PIECE CARD GAME 4TH ANNIVERSARY SET](https://p-bandai.com/sg/item/A2866726001) | 🔴 Sold out | — | 9s ago | page text: "OUT OF STOCK" |
+| [PAGE NOT AVAILABLE｜PREMIUM BANDAI](https://p-bandai.com/sg/item/A2866726001) | ⚪ Unreadable | — | 57s ago | product area never painted (site slow or throttling us) |
 | [GUNDAM CARD GAME 1ST ANNIVERSARY SET [MAY 2027 DE...](https://p-bandai.com/sg/item/A2891018002) | 🔴 Sold out | — | 0s ago | page text: "OUT OF STOCK" |
 
 ---
