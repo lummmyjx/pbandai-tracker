@@ -2,7 +2,7 @@
   "A2866726001": {
     "status": "unknown",
     "signal": "product area never painted (site slow or throttling us)",
-    "last_checked": "2026-08-31T04:48:21+00:00",
+    "last_checked": "2026-08-31T05:02:59+00:00",
     "url": "https://p-bandai.com/sg/item/A2866726001",
     "checked_by": "cloud backup",
     "title": "PAGE NOT AVAILABLE｜PREMIUM BANDAI",
@@ -13,13 +13,13 @@
     "last_status_change": "2026-08-08T16:36:10+00:00",
     "in_stock_streak": 0,
     "alerted": false,
-    "blind_streak": 1,
-    "next_due": "2026-08-31T04:51:21+00:00"
+    "blind_streak": 2,
+    "next_due": "2026-08-31T05:08:59+00:00"
   },
   "A2891018002": {
     "status": "unknown",
     "signal": "product area never painted (site slow or throttling us)",
-    "last_checked": "2026-08-31T04:46:48+00:00",
+    "last_checked": "2026-08-31T05:01:27+00:00",
     "url": "https://p-bandai.com/sg/item/A2891018002",
     "checked_by": "cloud backup",
     "title": "PAGE NOT AVAILABLE｜PREMIUM BANDAI",
@@ -30,8 +30,8 @@
     "last_status_change": "2026-08-23T07:50:56+00:00",
     "in_stock_streak": 0,
     "alerted": false,
-    "blind_streak": 1,
-    "next_due": "2026-08-31T04:49:48+00:00",
+    "blind_streak": 2,
+    "next_due": "2026-08-31T05:07:27+00:00",
     "last_alert": "2026-08-23T05:05:37+00:00"
   }
 }
