@@ -2,13 +2,13 @@
 
 **🟢 Healthy — every listing read cleanly**
 
-Last check: 2026-09-01 00:00 UTC (by cloud backup)
+Last check: 2026-09-01 02:03 UTC (by cloud backup)
 Tracking 2 listing(s).
 
 | Listing | Status | Price | Last checked | Why |
 |---|---|---|---|---|
-| [ONE PIECE CARD GAME 4TH ANNIVERSARY SET](https://p-bandai.com/sg/item/A2866726001) | 🔴 Sold out | — | 9s ago | page text: "OUT OF STOCK" |
-| [GUNDAM CARD GAME 1ST ANNIVERSARY SET [MAY 2027 DE...](https://p-bandai.com/sg/item/A2891018002) | 🔴 Sold out | — | 0s ago | page text: "OUT OF STOCK" |
+| [ONE PIECE CARD GAME 4TH ANNIVERSARY SET](https://p-bandai.com/sg/item/A2866726001) | 🔴 Sold out | — | 0s ago | page text: "OUT OF STOCK" |
+| [GUNDAM CARD GAME 1ST ANNIVERSARY SET [MAY 2027 DE...](https://p-bandai.com/sg/item/A2891018002) | 🔴 Sold out | — | 7s ago | page text: "OUT OF STOCK" |
 
 ---
 
