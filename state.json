@@ -1,8 +1,8 @@
 {
   "A2866726001": {
-    "status": "sold_out",
-    "signal": "page text: \"OUT OF STOCK\"",
-    "last_checked": "2026-09-02T14:03:01+00:00",
+    "status": "unknown",
+    "signal": "no recognised stock wording found",
+    "last_checked": "2026-09-02T16:06:59+00:00",
     "url": "https://p-bandai.com/sg/item/A2866726001",
     "checked_by": "cloud backup",
     "title": "ONE PIECE CARD GAME 4TH ANNIVERSARY SET",
@@ -13,13 +13,13 @@
     "last_status_change": "2026-08-08T16:36:10+00:00",
     "in_stock_streak": 0,
     "alerted": false,
-    "blind_streak": 0,
-    "next_due": null
+    "blind_streak": 1,
+    "next_due": "2026-09-02T16:09:59+00:00"
   },
   "A2891018002": {
     "status": "sold_out",
     "signal": "page text: \"OUT OF STOCK\"",
-    "last_checked": "2026-09-02T14:03:09+00:00",
+    "last_checked": "2026-09-02T16:06:44+00:00",
     "url": "https://p-bandai.com/sg/item/A2891018002",
     "checked_by": "cloud backup",
     "title": "GUNDAM CARD GAME 1ST ANNIVERSARY SET [MAY 2027 DELIVERY]",
