@@ -19,7 +19,7 @@
   "A2891018002": {
     "status": "unknown",
     "signal": "product area never painted (site slow or throttling us)",
-    "last_checked": "2026-09-04T16:47:44+00:00",
+    "last_checked": "2026-09-04T17:01:22+00:00",
     "url": "https://p-bandai.com/sg/item/A2891018002",
     "checked_by": "cloud backup",
     "title": "PAGE NOT AVAILABLE｜PREMIUM BANDAI",
@@ -30,8 +30,8 @@
     "last_status_change": "2026-08-23T07:50:56+00:00",
     "in_stock_streak": 0,
     "alerted": false,
-    "blind_streak": 1,
-    "next_due": "2026-09-04T16:50:44+00:00",
+    "blind_streak": 2,
+    "next_due": "2026-09-04T17:07:22+00:00",
     "last_alert": "2026-08-23T05:05:37+00:00"
   }
 }
