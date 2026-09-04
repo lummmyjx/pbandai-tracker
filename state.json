@@ -2,7 +2,7 @@
   "A2866726001": {
     "status": "unknown",
     "signal": "product area never painted (site slow or throttling us)",
-    "last_checked": "2026-09-04T15:41:31+00:00",
+    "last_checked": "2026-09-04T16:01:34+00:00",
     "url": "https://p-bandai.com/sg/item/A2866726001",
     "checked_by": "cloud backup",
     "title": "PAGE NOT AVAILABLE｜PREMIUM BANDAI",
@@ -13,13 +13,13 @@
     "last_status_change": "2026-08-08T16:36:10+00:00",
     "in_stock_streak": 0,
     "alerted": false,
-    "blind_streak": 40,
-    "next_due": "2026-09-04T15:56:31+00:00"
+    "blind_streak": 41,
+    "next_due": "2026-09-04T16:16:34+00:00"
   },
   "A2891018002": {
     "status": "sold_out",
     "signal": "page text: \"OUT OF STOCK\"",
-    "last_checked": "2026-09-04T15:39:54+00:00",
+    "last_checked": "2026-09-04T16:00:00+00:00",
     "url": "https://p-bandai.com/sg/item/A2891018002",
     "checked_by": "cloud backup",
     "title": "GUNDAM CARD GAME 1ST ANNIVERSARY SET [MAY 2027 DELIVERY]",
