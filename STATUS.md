@@ -1,14 +1,14 @@
 # P-Bandai tracker status
 
-**🔴 Blind — no listing could be read. Site may be throttling us.**
+**🟡 Degraded — 1 of 2 listings unreadable**
 
-Last check: 2026-09-04 22:03 UTC (by cloud backup)
+Last check: 2026-09-04 22:35 UTC (by cloud backup)
 Tracking 2 listing(s).
 
 | Listing | Status | Price | Last checked | Why |
 |---|---|---|---|---|
-| [PAGE NOT AVAILABLE｜PREMIUM BANDAI](https://p-bandai.com/sg/item/A2866726001) | ⚪ Unreadable | — | 13m ago | product area never painted (site slow or throttling us) |
-| [PAGE NOT AVAILABLE｜PREMIUM BANDAI](https://p-bandai.com/sg/item/A2891018002) | ⚪ Unreadable | — | 0s ago | product area never painted (site slow or throttling us) |
+| [PAGE NOT AVAILABLE｜PREMIUM BANDAI](https://p-bandai.com/sg/item/A2866726001) | ⚪ Unreadable | — | 0s ago | product area never painted (site slow or throttling us) |
+| [GUNDAM CARD GAME 1ST ANNIVERSARY SET [MAY 2027 DE...](https://p-bandai.com/sg/item/A2891018002) | 🔴 Sold out | — | 1m ago | page text: "OUT OF STOCK" |
 
 ---
 
