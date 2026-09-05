@@ -2,12 +2,12 @@
 
 **🔴 Blind — no listing could be read. Site may be throttling us.**
 
-Last check: 2026-09-05 05:50 UTC (by cloud backup)
+Last check: 2026-09-05 06:01 UTC (by cloud backup)
 Tracking 2 listing(s).
 
 | Listing | Status | Price | Last checked | Why |
 |---|---|---|---|---|
-| [PAGE NOT AVAILABLE｜PREMIUM BANDAI](https://p-bandai.com/sg/item/A2866726001) | ⚪ Unreadable | — | 1m ago | product area never painted (site slow or throttling us) |
+| [PAGE NOT AVAILABLE｜PREMIUM BANDAI](https://p-bandai.com/sg/item/A2866726001) | ⚪ Unreadable | — | 12m ago | product area never painted (site slow or throttling us) |
 | [PAGE NOT AVAILABLE｜PREMIUM BANDAI](https://p-bandai.com/sg/item/A2891018002) | ⚪ Unreadable | — | 0s ago | product area never painted (site slow or throttling us) |
 
 ---
