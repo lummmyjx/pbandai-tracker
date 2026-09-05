@@ -2,12 +2,12 @@
 
 **🟡 Degraded — 1 of 2 listings unreadable**
 
-Last check: 2026-09-05 17:02 UTC (by cloud backup)
+Last check: 2026-09-05 18:00 UTC (by cloud backup)
 Tracking 2 listing(s).
 
 | Listing | Status | Price | Last checked | Why |
 |---|---|---|---|---|
-| [ONE PIECE CARD GAME 4TH ANNIVERSARY SET](https://p-bandai.com/sg/item/A2866726001) | ⚪ Unreadable | — | 9s ago | no recognised stock wording found |
+| [ONE PIECE CARD GAME 4TH ANNIVERSARY SET](https://p-bandai.com/sg/item/A2866726001) | ⚪ Unreadable | — | 12s ago | no recognised stock wording found |
 | [GUNDAM CARD GAME 1ST ANNIVERSARY SET [MAY 2027 DE...](https://p-bandai.com/sg/item/A2891018002) | 🔴 Sold out | — | 0s ago | page text: "OUT OF STOCK" |
 
 ---
