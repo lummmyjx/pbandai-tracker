@@ -2,7 +2,7 @@
 
 **🟡 Degraded — 1 of 2 listings unreadable**
 
-Last check: 2026-09-06 08:03 UTC (by cloud backup)
+Last check: 2026-09-06 09:00 UTC (by cloud backup)
 Tracking 2 listing(s).
 
 | Listing | Status | Price | Last checked | Why |
